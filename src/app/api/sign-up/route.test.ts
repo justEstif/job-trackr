@@ -15,10 +15,10 @@ test.afterAll(async () => {
 });
 
 test("should create a new user", async ({ request }) => {
-  const signUp = await request.post(`/api/auth/sign-up`, {
+  const res = await request.post("/api/sign-up", {
     data: {
       ...fakeUser,
     },
   });
-  expect(signUp.ok()).toBeTruthy();
+  expect(res.ok()).toBeTruthy();
 });
