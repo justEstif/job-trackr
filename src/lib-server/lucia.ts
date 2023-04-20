@@ -2,10 +2,10 @@
 import lucia from "lucia-auth";
 import { node } from "lucia-auth/middleware";
 import prisma from "@lucia-auth/adapter-prisma";
-import prismeClient from "./prisma";
+import prismaClient from "./prisma";
 
 export const auth = lucia({
-  adapter: prisma(prismeClient),
+  adapter: prisma(prismaClient),
   env: process.env.NODE_ENV === "development" ? "DEV" : "PROD",
   middleware: node(),
 });
