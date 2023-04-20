@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { Prisma } from "@prisma/client";
 import { LuciaError } from "lucia-auth";
+import { auth } from "@/lib-server/lucia";
 
 export async function POST(req: Request) {
   const body = await req.json();
@@ -13,9 +14,22 @@ export async function POST(req: Request) {
       })
       .parse(body);
 
+    const user = await auth.createUser({
+      primaryKey: {
+        providerId: "username",
+        providerUserId: username,
+        password,
+      },
+      attributes: {
+        username,
+      },
+    });
+    // const session = await auth.createSession(user.userId);
+    // const authRequest = auth.handleRequest(req);
+    // authRequest.setSession(session);
+
     return NextResponse.json({
-      username,
-      password,
+      user,
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -45,6 +59,7 @@ export async function POST(req: Request) {
     console.error(error);
     return NextResponse.json({
       error: "Unknown error occurred",
+      dump: error,
     });
   }
 }
