@@ -36,7 +36,7 @@ const Index = () => {
     >;
     const username = formValues.username.value;
     const password = formValues.password.value;
-    const response = await fetch("/api/login", {
+    const response = await fetch("/api/sign-in", {
       method: "POST",
       body: JSON.stringify({
         username,
@@ -52,7 +52,7 @@ const Index = () => {
   return (
     <>
       <h2>Sign in</h2>
-      <form method="post" onSubmit={handleSubmit} action="/api/login">
+      <form method="post" onSubmit={handleSubmit} action="/api/sign-in">
         <label htmlFor="username">username</label>
         <br />
         <input id="username" name="username" />
@@ -64,7 +64,7 @@ const Index = () => {
         <input type="submit" value="Continue" className="button" />
       </form>
       {message && <p className="error">{message ?? ""}</p>}
-      <Link href="/signup" className="link">
+      <Link href="/sign-up" className="link">
         Create a new account
       </Link>
     </>
