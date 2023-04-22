@@ -1,10 +1,10 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { Prisma } from "@prisma/client";
 import { LuciaError } from "lucia-auth";
 import { auth } from "@/lib-server/lucia";
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   const body = await req.json();
   try {
     const { username, password } = z
@@ -24,12 +24,13 @@ export async function POST(req: Request) {
         username,
       },
     });
-    // const session = await auth.createSession(user.userId);
-    // const authRequest = auth.handleRequest(req);
-    // authRequest.setSession(session);
+    const session = await auth.createSession(user.userId);
+    const authRequest = auth.handleRequest(req, new Response());
+    authRequest.setSession(session);
 
     return NextResponse.json({
-      user,
+      id: user.userId,
+      username: user.username,
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
