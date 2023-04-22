@@ -1,19 +1,27 @@
-import { NextRequest, NextResponse } from "next/server";
-import { z } from "zod";
-import { Prisma } from "@prisma/client";
+import { auth } from "../../auth/lucia";
 import { LuciaError } from "lucia-auth";
-import { auth } from "@/lib-server/lucia";
+import { Prisma } from "@prisma/client";
 
-export async function POST(req: NextRequest) {
-  const body = await req.json();
+import type { NextApiRequest, NextApiResponse } from "next";
+
+type Data = {
+  error?: string;
+};
+
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse<Data>
+) {
+  if (req.method !== "POST")
+    return res.status(404).json({ error: "Not found" });
+  const { username, password } =
+    typeof req.body === "string" ? JSON.parse(req.body) : req.body;
+  if (!username || !password) {
+    return res.status(200).json({
+      error: "Invalid input",
+    });
+  }
   try {
-    const { username, password } = z
-      .object({
-        username: z.string(),
-        password: z.string(),
-      })
-      .parse(body);
-
     const user = await auth.createUser({
       primaryKey: {
         providerId: "username",
@@ -25,26 +33,16 @@ export async function POST(req: NextRequest) {
       },
     });
     const session = await auth.createSession(user.userId);
-    const authRequest = auth.handleRequest(req, new Response());
+    const authRequest = auth.handleRequest(req, res);
     authRequest.setSession(session);
-
-    return NextResponse.json({
-      id: user.userId,
-      username: user.username,
-    });
+    return res.redirect(302, "/");
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json({
-        error: error.issues,
-        dump: error,
-      });
-    }
     if (
       error instanceof Prisma.PrismaClientKnownRequestError &&
       error.code === "P2002" &&
       error.message?.includes("username")
     ) {
-      return NextResponse.json({
+      return res.status(200).json({
         error: "Username already in use",
       });
     }
@@ -52,15 +50,14 @@ export async function POST(req: NextRequest) {
       error instanceof LuciaError &&
       error.message === "AUTH_DUPLICATE_KEY_ID"
     ) {
-      return NextResponse.json({
+      return res.status(200).json({
         error: "Username already in use",
       });
     }
     // database connection error
     console.error(error);
-    return NextResponse.json({
+    return res.status(200).json({
       error: "Unknown error occurred",
-      dump: error,
     });
   }
 }

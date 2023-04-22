@@ -1,11 +1,11 @@
 import lucia from "lucia-auth";
-import "lucia-auth/polyfill/node";
 import { node } from "lucia-auth/middleware";
 import prisma from "@lucia-auth/adapter-prisma";
-import prismaClient from "./prisma";
+import { PrismaClient } from "@prisma/client";
+import "lucia-auth/polyfill/node";
 
 export const auth = lucia({
-  adapter: prisma(prismaClient),
+  adapter: prisma(new PrismaClient()),
   env: process.env.NODE_ENV === "development" ? "DEV" : "PROD",
   middleware: node(),
   transformDatabaseUser: (userData) => {
