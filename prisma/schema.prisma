@@ -10,11 +10,60 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Job {
+  id String @id @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // details
+  title       String
+  interest    Int
+  status      String
+  description String
+
+  // applicant
+  user    AuthUser @relation(references: [id], fields: [user_id], onDelete: Cascade)
+  user_id String   @map("userId")
+
+  // company
+  company       Company        @relation(references: [id], fields: [company_id], onDelete: Cascade)
+  company_id    String         @map("companyId")
+  notifications Notification[]
+}
+
+model Company {
+  id          String   @id @unique
+  name        String   @unique
+  home_url    String   @map("homeUrl")
+  image_url   String   @map("imageUrl")
+  description String
+  user        AuthUser @relation(references: [id], fields: [user_id], onDelete: Cascade)
+  user_id     String   @map("userId")
+  jobs        Job[]
+}
+
+model Notification {
+  id          String   @id @unique
+  name        String
+  notify_date DateTime
+
+  user   AuthUser @relation(references: [id], fields: [userId], onDelete: Cascade)
+  userId String
+
+  job   Job    @relation(references: [id], fields: [jobId], onDelete: Cascade)
+  jobId String
+}
+
 model AuthUser {
   id           String        @id @unique
-  username     String        @unique
   auth_session AuthSession[]
   auth_key     AuthKey[]
+
+  username      String         @unique
+  jobs          Job[]
+  companies     Company[]
+  notifications Notification[]
 
   @@map("auth_user")
 }
