@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -19,7 +16,7 @@ model Job {
   // details
   title       String
   interest    Int
-  status      String
+  status      Status @default(APPLIED)
   description String
 
   // applicant
@@ -27,9 +24,21 @@ model Job {
   user_id String
 
   // company
-  company       Company        @relation(references: [id], fields: [company_id], onDelete: Cascade)
-  company_id    String
+  company    Company @relation(references: [id], fields: [company_id], onDelete: Cascade)
+  company_id String
+
+  // notifications
   notifications Notification[]
+
+  @@map("job")
+}
+
+enum Status {
+  APPLIED
+  INTERVIEWING
+  DENIED
+  DECLINED
+  ARCHIVED
 }
 
 model Company {
@@ -41,6 +50,8 @@ model Company {
   user        AuthUser @relation(references: [id], fields: [user_id], onDelete: Cascade)
   user_id     String
   jobs        Job[]
+
+  @@map("company")
 }
 
 model Notification {
@@ -52,6 +63,8 @@ model Notification {
   job_id  String
   user    AuthUser @relation(references: [id], fields: [user_id], onDelete: Cascade)
   job     Job      @relation(references: [id], fields: [job_id], onDelete: Cascade)
+
+  @@map("notification")
 }
 
 model AuthUser {
