@@ -32,25 +32,21 @@ const POST: NextApiHandler = async (req, res) => {
       })
       .parse(body);
 
-    return res.json({
-      username,
-      password,
+    const user = await auth.createUser({
+      primaryKey: {
+        providerId: "username",
+        providerUserId: username,
+        password,
+      },
+      attributes: {
+        username,
+      },
     });
-    // const user = await auth.createUser({
-    //   primaryKey: {
-    //     providerId: "username",
-    //     providerUserId: username,
-    //     password,
-    //   },
-    //   attributes: {
-    //     username,
-    //   },
-    // });
-    //
-    // const session = await auth.createSession(user.userId);
-    // const authRequest = auth.handleRequest(req, res);
-    // authRequest.setSession(session);
-    // return res.redirect(302, "/");
+
+    const session = await auth.createSession(user.userId);
+    const authRequest = auth.handleRequest(req, res);
+    authRequest.setSession(session);
+    return res.redirect(302, "/");
   } catch (error) {
     if (error instanceof z.ZodError) {
       return res.status(400).json({
