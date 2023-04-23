@@ -18,20 +18,24 @@
 
 ### `/job-applications/:id`
 
-- update job app
-- delete job app
-- read one job app
+- PUT job app
+- DELETE job app
+- GET one job app
+
+### `/job-applications/search?=`
+
+- POST `/job-applications/search?=`
 
 ## `/job-sources`
 
-- create job source
-- get all job sources
+- POST job source
+- GET all job sources
 
 ### `/job-sources/:id`
 
-- delete job source
-- update job source
-- read one job source
+- DELETE job source
+- PUT job source
+- GET one job source
 
 ## `/companies`
 
