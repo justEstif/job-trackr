@@ -7,6 +7,14 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Status {
+  APPLIED
+  INTERVIEWING
+  DENIED
+  DECLINED
+  ARCHIVED
+}
+
 model Job {
   id String @id @unique
 
@@ -18,6 +26,7 @@ model Job {
   interest    Int
   status      Status @default(APPLIED)
   description String
+  source      String
 
   // applicant
   user    AuthUser @relation(references: [id], fields: [user_id], onDelete: Cascade)
@@ -33,23 +42,13 @@ model Job {
   @@map("job")
 }
 
-enum Status {
-  APPLIED
-  INTERVIEWING
-  DENIED
-  DECLINED
-  ARCHIVED
-}
-
 model Company {
-  id          String   @id @unique
-  name        String   @unique
-  home_url    String
-  image_url   String
-  description String
-  user        AuthUser @relation(references: [id], fields: [user_id], onDelete: Cascade)
-  user_id     String
-  jobs        Job[]
+  id        String   @id @unique
+  name      String   @unique
+  image_url String
+  user      AuthUser @relation(references: [id], fields: [user_id], onDelete: Cascade)
+  user_id   String
+  jobs      Job[]
 
   @@map("company")
 }
@@ -57,7 +56,7 @@ model Company {
 model Notification {
   id          String   @id @unique
   name        String
-  notify_date DateTime
+  notify_date DateTime @default(dbgenerated("NOW() + interval '14 day'"))
 
   user_id String
   job_id  String
