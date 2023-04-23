@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { auth } from "../auth/lucia";
+import { auth } from "../lib-server/lucia";
 
 import type { GetServerSidePropsContext, GetServerSidePropsResult } from "next";
 
