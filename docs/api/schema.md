@@ -2,7 +2,7 @@
 
 - company
 - job-application
-- job-source
+- ~job-source~
 - notification
 - user
 
@@ -37,7 +37,7 @@ CREATE TABLE job_application(
 );
 ```
 
-## job-source
+## ~job-source~
 
 ```sql
 CREATE TABLE job-source(

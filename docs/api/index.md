@@ -13,10 +13,14 @@
 
 ## `/job-applications`
 
+**requires user id**
+
 - POST: create job app
 - GET: read all job apps
 
 ### `/job-applications/:id`
+
+**requires user id**
 
 - PUT job app
 - DELETE job app
@@ -24,31 +28,28 @@
 
 ### `/job-applications/search?=`
 
+**requires user id**
+
 - POST `/job-applications/search?=`
 
-## `/job-sources`
-
-- POST job source
-- GET all job sources
-
-### `/job-sources/:id`
-
-- DELETE job source
-- PUT job source
-- GET one job source
-
 ## `/companies`
+
+**requires user id**
 
 - POST create company
 - GET read companies
 
 ### `/companies/:id`
 
+**requires user id**
+
 - DELETE delete company
 - GET get one company
 - PUT update company
 
 ## `/notifications`
+
+**requires user id**
 
 - GET get all notifications
 - POST mark all are read
@@ -57,5 +58,3 @@
 
 - PUT update a notification
 - DELETE update a notification
-
-## `/search`
