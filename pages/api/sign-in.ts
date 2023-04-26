@@ -24,8 +24,8 @@ const POST: NextApiHandler = async (req, res) => {
   try {
     const { username, password } = z
       .object({
-        username: z.string(),
-        password: z.string(),
+        username: z.string({ required_error: "Username is required" }),
+        password: z.string({ required_error: "Password is required" }),
       })
       .parse(body);
 
@@ -35,13 +35,6 @@ const POST: NextApiHandler = async (req, res) => {
     authRequest.setSession(session);
     return res.redirect(302, "/");
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return res.status(400).json({
-        error: error.issues,
-        dump: error,
-      });
-    }
-
     if (error instanceof LuciaError) {
       if (
         error.message === "AUTH_INVALID_KEY_ID" ||
@@ -52,6 +45,12 @@ const POST: NextApiHandler = async (req, res) => {
         });
       }
     }
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({
+        error: error.issues.map((issue) => issue.message).toString(),
+      });
+    }
+
     // database connection error
     console.error(error);
     return res.status(200).json({
