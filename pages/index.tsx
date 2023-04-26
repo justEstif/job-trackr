@@ -16,7 +16,7 @@ export const getServerSideProps = async (
   if (!user)
     return {
       redirect: {
-        destination: "/login",
+        destination: "/sign-in",
         permanent: false,
       },
     };
@@ -41,10 +41,10 @@ const Index = (
       <button
         onClick={async () => {
           try {
-            await fetch("/api/logout", {
+            await fetch("/api/sign-out", {
               method: "POST",
             });
-            router.push("/login");
+            router.push("/sign-in");
           } catch (e) {
             console.log(e);
           }
