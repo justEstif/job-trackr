@@ -1,9 +1,63 @@
-import React, { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/router";
 import { auth } from "../lib-server/lucia";
-
+import { useRouter } from "next/router";
 import type { GetServerSidePropsContext, GetServerSidePropsResult } from "next";
+import { SubmitHandler, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+
+const validationSchema = z.object({
+  username: z.string({ required_error: "Username is required" }).nonempty(),
+  password: z.string({ required_error: "Password is required" }).nonempty(),
+});
+
+type ValidationSchema = z.infer<typeof validationSchema>;
+
+const Index = () => {
+  const router = useRouter();
+
+  const {
+    register,
+    handleSubmit,
+    setError,
+    formState: { errors },
+  } = useForm<ValidationSchema>({ resolver: zodResolver(validationSchema) });
+
+  const onSubmit: SubmitHandler<ValidationSchema> = async (data) => {
+    try {
+      const response = await fetch("/api/sign-up", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+      if (response.redirected) return router.push(response.url);
+      const result = (await response.json()) as {
+        error: string;
+      };
+      setError("password", { message: result.error });
+    } catch (error) {}
+  };
+
+  return (
+    <>
+      <h2>Sign Up</h2>
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <input placeholder="username" {...register("username")} />
+        {errors.username && <p>{errors.username?.message}</p>}
+        <input placeholder="password" {...register("password")} />
+        {errors.password && <p>{errors.password.message}</p>}
+        <button type="submit">Sign In</button>
+      </form>
+      <Link href="/sign-in" className="link">
+        Sign in
+      </Link>
+    </>
+  );
+};
+
+export default Index;
 
 export const getServerSideProps = async (
   context: GetServerSidePropsContext
@@ -22,53 +76,3 @@ export const getServerSideProps = async (
     props: {},
   };
 };
-
-const Index = () => {
-  const router = useRouter();
-  const [message, setMessage] = useState("");
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const formValues = e.target as any as Record<
-      "username" | "password",
-      {
-        value: string;
-      }
-    >;
-    const username = formValues.username.value;
-    const password = formValues.password.value;
-    const response = await fetch("/api/sign-up", {
-      method: "POST",
-      body: JSON.stringify({
-        username,
-        password,
-      }),
-    });
-    if (response.redirected) return router.push(response.url);
-    const result = (await response.json()) as {
-      error: string;
-    };
-    setMessage(result.error);
-  };
-  return (
-    <>
-      <h2>Create an account</h2>
-      <form method="post" onSubmit={handleSubmit} action="/api/sign-up">
-        <label htmlFor="username">username</label>
-        <br />
-        <input id="username" name="username" />
-        <br />
-        <label htmlFor="password">password</label>
-        <br />
-        <input type="password" id="password" name="password" />
-        <br />
-        <input type="submit" value="Continue" className="button" />
-      </form>
-      {message && <p className="error">{message}</p>}
-      <Link href="/sign-in" className="link">
-        Sign in
-      </Link>
-    </>
-  );
-};
-
-export default Index;
