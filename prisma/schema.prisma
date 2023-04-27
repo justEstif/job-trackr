@@ -46,7 +46,7 @@ model Company {
   id String @id @default(cuid())
 
   name      String   @unique
-  image_url String
+  image_url String?
   user      AuthUser @relation(references: [id], fields: [user_id], onDelete: Cascade)
   user_id   String
   jobs      Job[]
