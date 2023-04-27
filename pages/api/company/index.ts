@@ -1,5 +1,6 @@
-import { auth } from "../../lib-server/lucia";
+import { auth } from "../../../lib-server/lucia";
 import type { NextApiHandler, NextApiRequest, NextApiResponse } from "next";
+import { prisma } from "../../../lib-server/prisma";
 
 export default async function API(req: NextApiRequest, res: NextApiResponse) {
   switch (req.method) {
@@ -14,5 +15,15 @@ const GET: NextApiHandler = async (req, res) => {
   const authRequest = auth.handleRequest(req, res);
   const session = await authRequest.validate();
   if (!session) return res.status(401).json({ error: "Unauthorized" });
-  else return res.status(200).send("works");
+  else {
+    const { user } = await auth.validateSessionUser(session.sessionId);
+    const companies = await prisma.company.findMany({
+      where: {
+        user_id: user.userId,
+      },
+    });
+    return res.status(200).json({
+      data: companies,
+    });
+  }
 };
