@@ -1,24 +1,45 @@
 import { test, expect } from "@playwright/test";
 import { prisma } from "../../../lib-server/prisma";
 
-const fakeUser = {
+const existingUser = {
+  username: "username_new",
+  password: "password",
+};
+
+const newUser = {
   username: "username",
   password: "password",
 };
 
-test.afterAll(async () => {
-  await prisma.authUser.delete({
-    where: {
-      username: fakeUser.username,
+// add an existing user
+test.beforeAll(async () => {
+  await prisma.authUser.create({
+    data: {
+      id: "id",
+      username: existingUser.username,
     },
   });
 });
 
-test("should create a new user", async ({ request }) => {
-  const res = await request.post("/api/sign-up", {
-    data: {
-      ...fakeUser,
+test.afterAll(async () => {
+  await prisma.authUser.deleteMany({
+    where: {
+      OR: [{ username: newUser.username }, { username: existingUser.username }],
     },
   });
-  expect(res.ok()).toBeTruthy();
+});
+
+test.describe("/api/sign-up", () => {
+  test("should sign up a user", async ({ request }) => {
+    const res = await request.post("/api/sign-up", {
+      data: { ...newUser },
+    });
+    expect(res.ok()).toBeTruthy();
+  });
+  test("should not sign up if username is used", async ({ request }) => {
+    const res = await request.post("/api/sign-up", {
+      data: { ...existingUser },
+    });
+    expect(res.ok()).toBeFalsy();
+  });
 });
