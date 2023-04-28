@@ -1,4 +1,4 @@
-import { auth } from "../../lib-server/lucia";
+import { auth } from "../../../lib-server/lucia";
 import type { NextApiHandler, NextApiRequest, NextApiResponse } from "next";
 import { LuciaError } from "lucia-auth";
 import { z } from "zod";
@@ -53,7 +53,7 @@ const POST: NextApiHandler = async (req, res) => {
 
     // database connection error
     console.error(error);
-    return res.status(200).json({
+    return res.status(500).json({
       error: "Unknown error occurred",
     });
   }

@@ -1,4 +1,4 @@
-import { auth } from "../../lib-server/lucia";
+import { auth } from "../../../lib-server/lucia";
 
 import type { NextApiHandler, NextApiRequest, NextApiResponse } from "next";
 

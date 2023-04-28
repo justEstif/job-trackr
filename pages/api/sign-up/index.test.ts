@@ -1,20 +1,10 @@
 import { test, expect } from "@playwright/test";
-import { prisma } from "../../lib-server/prisma";
+import { prisma } from "../../../lib-server/prisma";
 
 const fakeUser = {
-  id: "id",
   username: "username",
   password: "password",
 };
-
-test.beforeAll(async () => {
-  await prisma.authUser.create({
-    data: {
-      id: "id",
-      username: fakeUser.username,
-    },
-  });
-});
 
 test.afterAll(async () => {
   await prisma.authUser.delete({
@@ -24,8 +14,8 @@ test.afterAll(async () => {
   });
 });
 
-test("should sign in user", async ({ request }) => {
-  const res = await request.post("/api/sign-in", {
+test("should create a new user", async ({ request }) => {
+  const res = await request.post("/api/sign-up", {
     data: {
       ...fakeUser,
     },

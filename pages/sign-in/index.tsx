@@ -1,15 +1,15 @@
 import Link from "next/link";
-import { auth } from "../lib-server/lucia";
+import { auth } from "../../lib-server/lucia";
 import type { GetServerSidePropsContext, GetServerSidePropsResult } from "next";
-import AuthForm from "../components/AuthForm";
+import AuthForm from "../../components/AuthForm";
 
 const Index = () => {
   return (
     <>
-      <h2>Sign up</h2>
-      <AuthForm intent={"sign-up"} />
-      <Link href="/sign-in" className="link">
-        Sign in?
+      <h2>Sign in</h2>
+      <AuthForm intent={"sign-in"} />
+      <Link href="/sign-up" className="link">
+        Create a new account
       </Link>
     </>
   );

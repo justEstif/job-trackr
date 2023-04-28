@@ -18,12 +18,13 @@ const GET: NextApiHandler = async (req, res) => {
   else {
     const { user } = await auth.validateSessionUser(session.sessionId);
     const companies = await prisma.company.findMany({
-      where: {
-        user_id: user.userId,
+      where: { user_id: user.userId },
+      select: {
+        jobs: { select: { id: true } },
       },
     });
     return res.status(200).json({
-      data: companies,
+      companies,
     });
   }
 };
