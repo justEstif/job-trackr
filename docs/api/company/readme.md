@@ -1,6 +1,8 @@
-# `/api/company`
+# `/api/companies`
 
 ## GET
+
+Get the companies of the current user
 
 ### Requires
 
@@ -12,9 +14,29 @@
 
 ```json
 {
-  "ids": ["1", "2"],
+  "user1": {
+    "id": "user1",
+    "company": ["company2"]
+  }
+}
+```
+
+```json
+{
+  "jobs": {
+    "job1": {
+      "id": "job1",
+      "company": "company1"
+    }
+  }
+}
+```
+
+```json
+{
+  "ids": ["company1", "company2"],
   "companies": {
-    "1": {
+    "company1": {
       "id": "company1",
       "name": "Google",
       "image_url": "image",

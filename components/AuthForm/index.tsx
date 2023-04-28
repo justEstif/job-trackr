@@ -33,7 +33,9 @@ export default function AuthForm({ intent }: { intent: Intent }) {
         error: string;
       };
       setError("password", { message: result.error });
-    } catch (error) { }
+    } catch (error) {
+      // TODO add error messages
+    }
   };
 
   return (
