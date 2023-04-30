@@ -14,7 +14,7 @@ export default withUser(handler);
 
 const GET: NextApiHandler = async (req, res) => {
   if (req.headers.cookie) {
-    const { username, userId }: { username: string; userId: string } =
+    const { username, id }: { username: string; id: string } =
       JSON.parse(req.headers.cookie.split(";")[0]);
     const companies = await prisma.company.findMany({
       where: { user: { username: username } },
