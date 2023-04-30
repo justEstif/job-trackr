@@ -1,49 +1,74 @@
 import { test, expect } from "@playwright/test";
-// import type { Company } from "@prisma/client";
 import { prisma } from "../../../lib-server/prisma";
 
+const companies = [
+  {
+    name: "Google",
+    user: { connect: { username: "username_1" } },
+  },
+  {
+    name: "Facebook",
+    user: { connect: { username: "username_1" } },
+  },
+  {
+    name: "Amazon",
+    user: { connect: { username: "username_2" } },
+  },
+];
+
+const users = [
+  {
+    id: "user1",
+    username: "username_1",
+  },
+  {
+    id: "user2",
+    username: "username_2",
+  },
+];
+
 const headers = {
-  cookie: "auth_session=ckV8mGD2H1mcAK0zv4IaaPN3ZZyB3dPfC9tCPArO",
+  cookie: `${JSON.stringify(users[0])};`,
 };
 
-const fakeUser = {
-  id: "id",
-  username: "username",
-  password: "password",
-};
-
-test.beforeAll(async () => {
-  await prisma.authUser.create({
-    data: {
-      id: "id",
-      username: fakeUser.username,
-    },
+test.describe("GET /api/company", () => {
+  test.beforeAll(async () => {
+    await prisma.authUser.createMany({ data: users });
+    for (const company of companies) {
+      await prisma.company.create({
+        data: company,
+      });
+    }
   });
-});
-
-test.afterAll(async () => {
-  await prisma.authUser.delete({
-    where: {
-      username: fakeUser.username,
-    },
+  test.afterAll(async () => {
+    for (const user of users) {
+      await prisma.authUser.delete({
+        where: { username: user.username },
+      });
+    }
   });
-});
 
-test.describe("/api/company route tests", () => {
-  test("requires user for access", async ({ request }) => {
+  test("will fail if user isn't passed", async ({ request }) => {
     const res = await request.get("/api/company", { headers });
     expect(res.ok()).toBeTruthy();
   });
-  test.skip("get request responds with companies of user", async ({
+
+  test.skip("get all the companies that match the query of the current user", async ({
     request,
   }) => {
-    await prisma.company.create({
-      data: {
-        name: "Google",
-        jobs: {},
-        user: { connect: { username: "username" } },
-      },
-    });
-    const res = await request.get("/api/company", { headers });
+    const res = await request.get("/api/company?=goo");
+  });
+
+  test.skip("gets all the companies of the current user", async ({
+    request,
+  }) => {
+    const res = await request.get("/api/company");
+    expect(res.body).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          user_id: users[0]["id"],
+        }),
+      ])
+    );
   });
 });
