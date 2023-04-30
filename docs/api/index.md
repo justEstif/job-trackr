@@ -8,7 +8,6 @@
 - [ ] job-applications
 - search
 - notifications
-- job-sources
 - job-company
 
 ## `/job-applications`

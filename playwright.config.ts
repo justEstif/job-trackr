@@ -7,7 +7,6 @@ export default defineConfig({
     baseURL: "http://localhost:3000",
     extraHTTPHeaders: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${accessToken}`,
     },
   },
 });

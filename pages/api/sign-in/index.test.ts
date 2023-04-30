@@ -36,4 +36,8 @@ test.describe("/api/sign-in route", () => {
     });
     expect(res.ok()).toBeTruthy();
   });
+
+  test.skip(
+    "should test that the user signed in has the same username as the request pased"
+  );
 });
