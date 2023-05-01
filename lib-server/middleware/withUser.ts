@@ -1,7 +1,10 @@
 import type { NextApiHandler, NextApiResponse } from "next";
 import { auth } from "../lucia";
 
-const devMiddleware = (handler: NextApiHandler): NextApiHandler => {
+/**
+ * @description middleware to be used in testing only
+ */
+const testMiddleware = (handler: NextApiHandler): NextApiHandler => {
   return (req, res: NextApiResponse) => {
     if (req.headers.cookie) {
       return handler(req, res);
@@ -30,10 +33,10 @@ const prodMiddleware = (handler: NextApiHandler): NextApiHandler => {
 };
 
 const withUser = (handler: NextApiHandler): NextApiHandler => {
-  if (process.env.NODE_ENV === "production") {
-    return prodMiddleware(handler);
+  if (process.env.TESTING === "true") {
+    return testMiddleware(handler);
   } else {
-    return devMiddleware(handler);
+    return prodMiddleware(handler);
   }
 };
 
