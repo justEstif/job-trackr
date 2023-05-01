@@ -27,10 +27,6 @@ const users = [
   },
 ];
 
-const headers = {
-  cookie: `${JSON.stringify(users[0])};`,
-};
-
 test.describe("GET /api/company", () => {
   test.beforeAll(async () => {
     await prisma.authUser.createMany({ data: users });
@@ -49,26 +45,29 @@ test.describe("GET /api/company", () => {
   });
 
   test("will fail if user isn't passed", async ({ request }) => {
+    const user = users[0];
+    const headers = { cookie: `${JSON.stringify(user)};` };
     const res = await request.get("/api/company", { headers });
+    console.log(res.body);
     expect(res.ok()).toBeTruthy();
+  });
+
+  test("gets all the companies of the current user", async ({ request }) => {
+    const user = users[0];
+    const headers = { cookie: `${JSON.stringify(user)};` };
+    const res = (await request.get("/api/company", { headers }))
+    expect(res.body).toMatchObject(expected);
   });
 
   test.skip("get all the companies that match the query of the current user", async ({
     request,
   }) => {
-    const res = await request.get("/api/company?=goo");
-  });
-
-  test.skip("gets all the companies of the current user", async ({
-    request,
-  }) => {
-    const res = await request.get("/api/company");
-    expect(res.body).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          user_id: users[0]["id"],
-        }),
-      ])
-    );
+    const user = users[0];
+    const headers = { cookie: `${JSON.stringify(user)};` };
+    const res = await request.get("/api/company", { headers });
+    for (const company in res.body) {
+      expect(company.user_id).toBe(user["id"]);
+      expect(company["name"]).toContainText(/go/);
+    }
   });
 });
