@@ -10,7 +10,9 @@ const devMiddleware = (handler: NextApiHandler): NextApiHandler => {
   };
 };
 
-// use lucia to check if user exists
+/**
+ * @description middleware to authorize request using lucia
+ */
 const prodMiddleware = (handler: NextApiHandler): NextApiHandler => {
   return async (req, res: NextApiResponse) => {
     const authRequest = auth.handleRequest(req, res);
@@ -19,11 +21,9 @@ const prodMiddleware = (handler: NextApiHandler): NextApiHandler => {
       return res.status(401).json({ error: "Unauthorized" });
     } else {
       const { user } = await auth.validateSessionUser(session.sessionId);
-      if (req.headers.cookie) {
-        req.headers.cookie = `${JSON.stringify(user)};${req.headers.cookie}`;
-      } else {
-        req.headers.cookie = JSON.stringify(user);
-      }
+      req.headers.cookie
+        ? (req.headers.cookie = `${JSON.stringify(user)};${req.headers.cookie}`)
+        : (req.headers.cookie = JSON.stringify(user));
       return handler(req, res);
     }
   };
