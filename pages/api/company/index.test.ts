@@ -1,6 +1,7 @@
 require("next");
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import { prisma } from "../../../lib-server/prisma";
+import { auth } from "../../../lib-server/lucia";
 
 const companies = [
   {
@@ -19,42 +20,59 @@ const companies = [
 
 const users = [
   {
-    id: "user1",
+    id: "",
     username: "username_1",
+    password: "password",
   },
   {
-    id: "user2",
+    id: "",
     username: "username_2",
+    password: "password",
   },
 ];
 
 async function getCompanies(user: (typeof users)[0], query?: string) {
-  const url = `http://localhost:3000/api/company${query && `query?=${query}`}`;
+  let url = `http://localhost:3000/api/company${query ? `?search=${query}` : ""
+    }`;
+  const key = await auth.useKey("username", user.username, user.password);
+  const session = await auth.createSession(key.userId);
   return fetch(url, {
-    headers: { cookie: `${JSON.stringify(user)};` },
+    headers: { cookie: `auth_session=${session.sessionId};` },
   }).then((r) => r.json());
 }
 
 describe("GET /api/company", () => {
   beforeAll(async () => {
-    await prisma.authUser.createMany({ data: users });
+    for (const user of users) {
+      await auth
+        .createUser({
+          primaryKey: {
+            providerId: "username",
+            providerUserId: user.username,
+            password: user.password,
+          },
+          attributes: {
+            username: user.username,
+          },
+        })
+        .then((newUser) => {
+          user.id = newUser.userId;
+        });
+    }
+
     for (const company of companies) {
-      await prisma.company.create({
-        data: company,
-      });
+      await prisma.company.create({ data: company });
     }
   });
   afterAll(async () => {
     await prisma.authUser.deleteMany({
-      where: {
-        username: { in: users.map((user) => user.username) },
-      },
+      where: { username: { in: users.map((user) => user.username) } },
     });
   });
 
   it("returns if valid user", async () => {
     const user = users[0];
-    await expect(getCompanies(user)).resolves.not.toThrow();
+    await expect(getCompanies(user)).resolves.toBeTruthy();
   });
 
   it("returns the companies of user", async () => {
@@ -68,10 +86,12 @@ describe("GET /api/company", () => {
 
   it("returns the companies of a user that match query param", async () => {
     const user = users[0];
-    const res = await getCompanies(user, "goo");
+    const search = "goo";
+    const res = await getCompanies(user, search);
     expect(res).toHaveProperty("companies");
     for (const company of res.companies) {
       expect(company).toHaveProperty("user_id", `${user.id}`);
+      expect(company.name.toLowerCase()).toContain(search.toLowerCase());
     }
   });
 });
