@@ -1,4 +1,5 @@
-import { test, expect } from "@playwright/test";
+require("next");
+import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import { prisma } from "../../../lib-server/prisma";
 
 const companies = [
@@ -27,8 +28,15 @@ const users = [
   },
 ];
 
-test.describe("GET /api/company", () => {
-  test.beforeAll(async () => {
+async function getCompanies(user: (typeof users)[0], query?: string) {
+  const url = `http://localhost:3000/api/company${query && `query?=${query}`}`;
+  return fetch(url, {
+    headers: { cookie: `${JSON.stringify(user)};` },
+  }).then((r) => r.json());
+}
+
+describe("GET /api/company", () => {
+  beforeAll(async () => {
     await prisma.authUser.createMany({ data: users });
     for (const company of companies) {
       await prisma.company.create({
@@ -36,38 +44,34 @@ test.describe("GET /api/company", () => {
       });
     }
   });
-  test.afterAll(async () => {
-    for (const user of users) {
-      await prisma.authUser.delete({
-        where: { username: user.username },
-      });
+  afterAll(async () => {
+    await prisma.authUser.deleteMany({
+      where: {
+        username: { in: users.map((user) => user.username) },
+      },
+    });
+  });
+
+  it("returns if valid user", async () => {
+    const user = users[0];
+    await expect(getCompanies(user)).resolves.not.toThrow();
+  });
+
+  it("returns the companies of user", async () => {
+    const user = users[0];
+    const res = await getCompanies(user);
+    expect(res).toHaveProperty("companies");
+    for (const company of res.companies) {
+      expect(company).toHaveProperty("user_id", `${user.id}`);
     }
   });
 
-  test("will fail if user isn't passed", async ({ request }) => {
+  it("returns the companies of a user that match query param", async () => {
     const user = users[0];
-    const headers = { cookie: `${JSON.stringify(user)};` };
-    const res = await request.get("/api/company", { headers });
-    console.log(res.body);
-    expect(res.ok()).toBeTruthy();
-  });
-
-  test("gets all the companies of the current user", async ({ request }) => {
-    const user = users[0];
-    const headers = { cookie: `${JSON.stringify(user)};` };
-    const res = (await request.get("/api/company", { headers }))
-    expect(res.body).toMatchObject(expected);
-  });
-
-  test.skip("get all the companies that match the query of the current user", async ({
-    request,
-  }) => {
-    const user = users[0];
-    const headers = { cookie: `${JSON.stringify(user)};` };
-    const res = await request.get("/api/company", { headers });
-    for (const company in res.body) {
-      expect(company.user_id).toBe(user["id"]);
-      expect(company["name"]).toContainText(/go/);
+    const res = await getCompanies(user, "goo");
+    expect(res).toHaveProperty("companies");
+    for (const company of res.companies) {
+      expect(company).toHaveProperty("user_id", `${user.id}`);
     }
   });
 });

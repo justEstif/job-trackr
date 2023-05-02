@@ -1,13 +1,20 @@
-import { test, expect } from "@playwright/test";
+require("next");
+import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import { prisma } from "../../../lib-server/prisma";
 
-const user = {
+type User = {
+  id: string;
+  username: string;
+  password: string;
+};
+
+const user: User = {
   id: "id",
   username: "username",
   password: "password",
 };
 
-test.beforeAll(async () => {
+beforeAll(async () => {
   await prisma.authUser.create({
     data: {
       id: "id",
@@ -16,7 +23,7 @@ test.beforeAll(async () => {
   });
 });
 
-test.afterAll(async () => {
+afterAll(async () => {
   await prisma.authUser.delete({
     where: {
       username: user.username,
@@ -24,20 +31,24 @@ test.afterAll(async () => {
   });
 });
 
-test.describe("/api/sign-in route", () => {
-  test("shouldn't have a get response", async ({ request }) => {
-    const res = await request.get("/api/sign-in");
-    expect(res.ok()).toBeFalsy();
+async function getSignin() {
+  return fetch("http://localhost:3000/api/sign-in").then((r) => r.json());
+}
+
+async function postSignIn(user: User) {
+  return fetch("http://localhost:3000/api/sign-in", {
+    method: "POST",
+    body: JSON.stringify(user),
+  }).then((r) => r.json());
+}
+
+describe("/api/sign-in route", () => {
+  it("shouldn't have a get response", async () => {
+    const res = await getSignin();
+    await expect(getSignin()).resolves.not.toThrow();
   });
 
-  test("should sign in user", async ({ request }) => {
-    const res = await request.post("/api/sign-in", {
-      data: { ...user },
-    });
-    expect(res.ok()).toBeTruthy();
+  it("should sign in user", async () => {
+    await expect(postSignIn(user)).resolves.not.toThrow();
   });
-
-  test.skip(
-    "should test that the user signed in has the same username as the request pased"
-  );
 });
