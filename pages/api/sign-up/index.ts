@@ -30,7 +30,7 @@ const POST: NextApiHandler = async (req, res) => {
         username: z.string(),
         password: z.string(),
       })
-      .parse(body);
+      .parse(JSON.parse(body));
 
     const user = await auth.createUser({
       primaryKey: {

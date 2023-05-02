@@ -27,8 +27,7 @@ const POST: NextApiHandler = async (req, res) => {
         username: z.string({ required_error: "Username is required" }),
         password: z.string({ required_error: "Password is required" }),
       })
-      .parse(body);
-
+      .parse(JSON.parse(body));
     const authRequest = auth.handleRequest(req, res);
     const key = await auth.useKey("username", username, password);
     const session = await auth.createSession(key.userId);
@@ -40,7 +39,7 @@ const POST: NextApiHandler = async (req, res) => {
         error.message === "AUTH_INVALID_KEY_ID" ||
         error.message === "AUTH_INVALID_PASSWORD"
       ) {
-        return res.status(200).json({
+        return res.status(400).json({
           error: "Incorrect username or password",
         });
       }

@@ -1,45 +1,56 @@
-import { test, expect } from "@playwright/test";
+require("next");
+import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import { prisma } from "../../../lib-server/prisma";
+import { auth } from "../../../lib-server/lucia";
+
+type UserForm = {
+  username: string;
+  password: string;
+};
 
 const existingUser = {
+  id: "",
   username: "username_new",
   password: "password",
 };
 
 const newUser = {
+  id: "",
   username: "username",
   password: "password",
 };
 
 // add an existing user
-test.beforeAll(async () => {
-  await prisma.authUser.create({
-    data: {
-      id: "id",
+beforeAll(async () => {
+  await auth.createUser({
+    primaryKey: {
+      providerId: "username",
+      providerUserId: existingUser.username,
+      password: existingUser.password,
+    },
+    attributes: {
       username: existingUser.username,
     },
   });
 });
 
-test.afterAll(async () => {
-  await prisma.authUser.deleteMany({
-    where: {
-      OR: [{ username: newUser.username }, { username: existingUser.username }],
-    },
-  });
+afterAll(async () => {
+  await prisma.authUser.delete({ where: { username: newUser.username } });
+  await prisma.authUser.delete({ where: { username: existingUser.username } });
 });
 
-test.describe("/api/sign-up", () => {
-  test("should sign up a user", async ({ request }) => {
-    const res = await request.post("/api/sign-up", {
-      data: { ...newUser },
-    });
-    expect(res.ok()).toBeTruthy();
+async function postSignUp(user: UserForm) {
+  return fetch("http://localhost:3000/api/sign-up", {
+    method: "POST",
+    body: JSON.stringify(user),
+  }).then((r) => r.ok);
+}
+
+describe("/api/sign-up route", () => {
+  it("should sign up user", async () => {
+    await expect(postSignUp(newUser)).resolves.toBeTruthy();
   });
-  test("should not sign up if username is used", async ({ request }) => {
-    const res = await request.post("/api/sign-up", {
-      data: { ...existingUser },
-    });
-    expect(res.ok()).toBeFalsy();
+  it("shouldn't sign up user with existing username", async () => {
+    await expect(postSignUp(existingUser)).resolves.toBeFalsy();
   });
 });
