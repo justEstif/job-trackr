@@ -19,8 +19,18 @@ const GET: NextApiHandler = async (req, res) => {
       const { username } = z
         .object({ username: z.string() })
         .parse(JSON.parse(req.headers.cookie.split(";")[0]));
+
+      const { search } = z
+        .object({ search: z.string().optional() })
+        .parse(req.query);
+
       const companies = await prisma.company.findMany({
-        where: { user: { username: username } },
+        where: {
+          AND: [
+            { user: { username: username } },
+            search ? { name: { startsWith: search, mode: "insensitive" } } : {},
+          ],
+        },
         include: { jobs: { select: { id: true } } },
       });
       return res.status(200).json({ companies });
