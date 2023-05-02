@@ -2,9 +2,9 @@
 
 ## Endpoints
 
-- sign-in: handled by package
-- sign-up: handled by package
-- sign-out
+- [ ] sign-in: handled by package
+- [ ] sign-up: handled by package
+- [ ] sign-out
 - job-applications
 - search
 - notifications
@@ -13,38 +13,43 @@
 
 ## `/job-applications`
 
+**requires user id**
+
 - POST: create job app
 - GET: read all job apps
 
 ### `/job-applications/:id`
 
-- update job app
-- delete job app
-- read one job app
+**requires user id**
 
-## `/job-sources`
+- PUT job app
+- DELETE job app
+- GET one job app
 
-- create job source
-- get all job sources
+### `/job-applications/search?=`
 
-### `/job-sources/:id`
+**requires user id**
 
-- delete job source
-- update job source
-- read one job source
+- POST `/job-applications/search?=`
 
 ## `/companies`
+
+**requires user id**
 
 - POST create company
 - GET read companies
 
 ### `/companies/:id`
 
+**requires user id**
+
 - DELETE delete company
 - GET get one company
 - PUT update company
 
 ## `/notifications`
+
+**requires user id**
 
 - GET get all notifications
 - POST mark all are read
@@ -53,5 +58,3 @@
 
 - PUT update a notification
 - DELETE update a notification
-
-## `/search`

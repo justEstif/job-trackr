@@ -2,7 +2,7 @@
 
 - company
 - job-application
-- job-source
+- ~job-source~
 - notification
 - user
 
@@ -33,12 +33,11 @@ CREATE TABLE job_application(
   updated_at TIMESTAMP,
   user_id integer references user(id) on delete cascade,
   company_id integer references company(id) on delete cascade,
-  company_id integer references company(id) on delete cascade,
   job_source_id integer references job_source(id) on delete cascade,
 );
 ```
 
-## job-source
+## ~job-source~
 
 ```sql
 CREATE TABLE job-source(
