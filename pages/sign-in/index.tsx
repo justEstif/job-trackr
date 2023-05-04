@@ -1,21 +1,21 @@
-import Link from "next/link";
 import { auth } from "../../lib-server/lucia";
 import type { GetServerSidePropsContext, GetServerSidePropsResult } from "next";
 import AuthForm from "../../components/AuthForm";
+import Head from "next/head";
 
-const Index = () => {
+export default function SignInPage() {
   return (
-    <>
-      <h2>Sign in</h2>
-      <AuthForm intent={"sign-in"} />
-      <Link href="/sign-up" className="link">
-        Create a new account
-      </Link>
-    </>
+    <section>
+      <Head>
+        <title>Sign In</title>
+      </Head>
+      <div className="flex flex-col justify-center items-center">
+        <h2 className="mb-6 text-3xl font-bold">Sign in</h2>
+        <AuthForm intent={"sign-in"} />
+      </div>
+    </section>
   );
-};
-
-export default Index;
+}
 
 export const getServerSideProps = async (
   context: GetServerSidePropsContext
