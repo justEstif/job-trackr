@@ -2,6 +2,7 @@ import { useRouter } from "next/router";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import Link from "next/link";
 
 const validationSchema = z.object({
   username: z.string({ required_error: "Username is required" }).nonempty(),
@@ -39,14 +40,42 @@ export default function AuthForm({ intent }: { intent: Intent }) {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
-      <input placeholder="username" {...register("username")} />
-      {errors.username && <p>{errors.username?.message}</p>}
-      <input placeholder="password" {...register("password")} />
-      {errors.password && <p>{errors.password.message}</p>}
-      <button type="submit">
-        {intent === "sign-in" ? "Sign In" : "Sign Up"}
-      </button>
-    </form>
+    <>
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="flex flex-col gap-6 mb-6 w-full max-w-xs"
+      >
+        <div className="w-full max-w-xs form-control">
+          <label className="label">
+            <span className="label-text">Username</span>
+            {errors.username && (
+              <span className="label-text-alt">{errors.username?.message}</span>
+            )}
+          </label>
+          <input
+            className="w-full max-w-xs input input-bordered"
+            placeholder="Username"
+            {...register("username")}
+          />
+        </div>
+        <div className="w-full max-w-xs form-control">
+          <label className="label">
+            <span className="label-text">Password</span>
+            {errors.password && (
+              <span className="label-text-alt">{errors.password?.message}</span>
+            )}
+          </label>
+          <input
+            className="w-full max-w-xs input input-bordered input-md"
+            placeholder="password"
+            {...register("password")}
+          />
+        </div>
+
+        <button type="submit" className="btn">
+          {intent === "sign-in" ? "Sign In" : "Sign Up"}
+        </button>
+      </form>
+    </>
   );
 }
