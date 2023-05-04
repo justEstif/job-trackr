@@ -45,12 +45,13 @@ model Job {
 model Company {
   id String @id @default(cuid())
 
-  name      String   @unique
+  name      String
   image_url String?
   user      AuthUser @relation(references: [id], fields: [user_id], onDelete: Cascade)
   user_id   String
   jobs      Job[]
 
+  @@unique([user_id, name], name: "companyIdentifier")
   @@map("company")
 }
 
