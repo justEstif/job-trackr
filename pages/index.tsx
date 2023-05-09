@@ -11,9 +11,7 @@ import Head from "next/head";
 import type { Job } from "@prisma/client";
 import { JobCard } from "@/components/JobCard";
 
-type GetJobs = {
-  jobs: (Job & { company: { name: string } })[];
-};
+type JobWithCompanyName = Job & { company: { name: string } };
 
 async function getJobs(sessionId: string) {
   const url = `${process.env.NEXT_PUBLIC_BASE_API}/jobs`;
@@ -23,10 +21,8 @@ async function getJobs(sessionId: string) {
         cookie: `auth_session=${sessionId}`,
       },
     });
-
-    const { jobs }: { jobs: GetJobs } = await res.json();
-
-    return jobs;
+    const data = await res.json();
+    return data;
   } catch (error) {
     console.log(error);
   }
@@ -37,7 +33,7 @@ export const getServerSideProps = async (
 ): Promise<
   GetServerSidePropsResult<{
     user: User;
-    jobs: GetJobs;
+    jobs: JobWithCompanyName[];
   }>
 > => {
   const authRequest = auth.handleRequest(context.req, context.res);
@@ -51,7 +47,9 @@ export const getServerSideProps = async (
       },
     };
 
-  const jobs = await getJobs(session.sessionId);
+  const data = await getJobs(session.sessionId);
+  const jobs = data.jobs
+
 
   return {
     props: {
@@ -74,16 +72,8 @@ const Index = (
 
       <h2 className="mb-6 text-3xl font-bold">Home</h2>
 
-      {jobs.map((job, i) => (
-        <div key={i} className="mb-6 shadow-xl card bg-base-100 lg:card-side">
-          <div className="card-body">
-            <h2 className="card-title">{job.title}</h2>
-            <small>{job.description}</small>
-            <div className="justify-end card-actions">
-              <button className="btn btn-primary">View More</button>
-            </div>
-          </div>
-        </div>
+      {jobs && jobs.map((job, i) => (
+        <JobCard key={i} job={job} />
       ))}
     </>
   );
