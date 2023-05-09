@@ -1,4 +1,4 @@
-import { MenuIcon, HomeIcon, BellIcon, ProfileIcon } from "@/lib-client/icons";
+import { MenuIcon, ThreeDots } from "@/lib-client/icons";
 import Link from "next/link";
 import { useRouter } from "next/router";
 
@@ -32,6 +32,7 @@ export function Navbar() {
       </div>
     );
   }
+
   return (
     <div className="navbar bg-base-100">
       <div className="navbar-start">
@@ -51,33 +52,27 @@ export function Navbar() {
             </li>
           </ul>
         </div>
-        <Link href="/" className="btn btn-ghost btn-circle">
-          <HomeIcon />
-        </Link>
+        <a className="text-xl normal-case btn btn-ghost">JobTrackr</a>
       </div>
+
       <div className="navbar-end">
-        <button className="btn btn-ghost btn-circle">
-          <div className="indicator">
-            <BellIcon />
-            <span className="badge badge-xs badge-primary indicator-item"></span>
-          </div>
-        </button>
         <div className="dropdown dropdown-end">
-          <label tabIndex={0} className="btn btn-ghost avatar">
-            <ProfileIcon />
-          </label>
+          <button className="btn btn-square btn-ghost">
+            <ThreeDots />
+          </button>
+
           <ul
             tabIndex={0}
             className="p-2 mt-3 w-52 shadow menu menu-compact dropdown-content bg-base-100 rounded-box"
           >
             <li>
               <a className="justify-between">
-                Profile
+                Notifications
                 <span className="badge">New</span>
               </a>
             </li>
             <li>
-              <a>Settings</a>
+              <a>Username</a>
             </li>
             <li>
               <button
