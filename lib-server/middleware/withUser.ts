@@ -3,7 +3,6 @@ import { auth } from "../lucia";
 
 const withUser = (handler: NextApiHandler): NextApiHandler => {
   return async (req, res) => {
-    console.log(req.headers)
     const authRequest = auth.handleRequest(req, res);
     const session = await authRequest.validate();
     if (!session) {
