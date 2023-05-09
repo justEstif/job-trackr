@@ -27,7 +27,7 @@ const POST: NextApiHandler = async (req, res) => {
         username: z.string({ required_error: "Username is required" }),
         password: z.string({ required_error: "Password is required" }),
       })
-      .parse(JSON.parse(body));
+      .parse(body);
     const authRequest = auth.handleRequest(req, res);
     const key = await auth.useKey("username", username, password);
     const session = await auth.createSession(key.userId);

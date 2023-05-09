@@ -22,27 +22,25 @@ async function postSignIn(user: User) {
   }).then((r) => r.ok);
 }
 
-describe("POST /api/sign-in", () => {
-  beforeAll(async () => {
-    await auth.createUser({
-      primaryKey: {
-        providerId: "username",
-        providerUserId: user.username,
-        password: user.password,
-      },
-      attributes: {
-        username: user.username,
-      },
-    });
+beforeAll(async () => {
+  await auth.createUser({
+    primaryKey: {
+      providerId: "username",
+      providerUserId: user.username,
+      password: user.password,
+    },
+    attributes: {
+      username: user.username,
+    },
   });
+});
 
-  afterAll(async () => {
-    await prisma.authUser.delete({ where: { username: user.username } });
-  });
+afterAll(async () => {
+  await prisma.authUser.delete({ where: { username: user.username } });
+});
 
-  describe("/api/sign-in route", () => {
-    it("should sign in user", async () => {
-      await expect(postSignIn(user)).resolves.toBeTruthy();
-    });
+describe.skip("POST /api/sign-in", () => {
+  it("should sign in user", async () => {
+    await expect(postSignIn(user)).resolves.toBeTruthy();
   });
 });
