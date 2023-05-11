@@ -36,62 +36,31 @@ export function Navbar() {
   return (
     <div className="navbar bg-base-100">
       <div className="navbar-start">
-        <div className="dropdown">
-          <label tabIndex={0} className="btn btn-ghost">
-            <MenuIcon />
-          </label>
-          <ul
-            tabIndex={0}
-            className="p-2 mt-3 w-52 shadow menu menu-compact dropdown-content bg-base-100 rounded-box"
-          >
-            <li>
-              <a>Item 1</a>
-            </li>
-            <li>
-              <a>Item 3</a>
-            </li>
-          </ul>
-        </div>
-        <a className="text-xl normal-case btn btn-ghost">JobTrackr</a>
+        <Link href="/" className="text-xl normal-case btn btn-ghost">
+          JobTrackr
+        </Link>
       </div>
 
       <div className="navbar-end">
-        <div className="dropdown dropdown-end">
-          <button className="btn btn-square btn-ghost">
-            <ThreeDots />
-          </button>
+        <Link href="/new" className="text-lg normal-case btn btn-ghost">
+          New
+        </Link>
 
-          <ul
-            tabIndex={0}
-            className="p-2 mt-3 w-52 shadow menu menu-compact dropdown-content bg-base-100 rounded-box"
-          >
-            <li>
-              <a className="justify-between">
-                Notifications
-                <span className="badge">New</span>
-              </a>
-            </li>
-            <li>
-              <a>Username</a>
-            </li>
-            <li>
-              <button
-                onClick={async () => {
-                  try {
-                    await fetch("/api/sign-out", {
-                      method: "POST",
-                    });
-                    router.push("/sign-in");
-                  } catch (e) {
-                    console.log(e);
-                  }
-                }}
-              >
-                Sign out
-              </button>
-            </li>
-          </ul>
-        </div>
+        <button
+          className="text-lg normal-case btn btn-ghost"
+          onClick={async () => {
+            try {
+              await fetch("/api/sign-out", {
+                method: "POST",
+              });
+              router.push("/sign-in");
+            } catch (e) {
+              console.log(e);
+            }
+          }}
+        >
+          Sign out
+        </button>
       </div>
     </div>
   );
