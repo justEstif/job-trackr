@@ -44,33 +44,39 @@ async function GET(req: NextApiRequest, res: NextApiResponse) {
 async function POST(req: NextApiRequest, res: NextApiResponse) {
   try {
     const username = getUsername(req);
-    const { title, description, interest, source, company } = z
+    const { title, description, interest, source, company, userId } = z
       .object({
         title: z.string({ required_error: "Title is required" }),
         description: z.string({ required_error: "description is required" }),
-        interest: z
-          .number({ required_error: "interest is required" })
-          .min(0)
-          .max(5),
+        interest: z.number({ required_error: "interest is required" }).min(0).max(5),
         source: z.string({ required_error: "source is required" }),
         company: z.string({ required_error: "company is required" }),
+        userId: z.string({ required_error: "user_id is required" }),
       })
       .parse(req.body);
-    const job = await prisma.job.create({
-      data: {
-        title,
-        description,
-        interest,
-        source,
-        user: { connect: { username } },
-        company: {
-          connectOrCreate: {
-            where: { name: company },
-            create: { name: company, user: { connect: { username } } },
-          },
-        },
-      },
-    });
+    const job = {
+      title,
+      description,
+      interest,
+      source,
+      company,
+      userId,
+    };
+    // const job = await prisma.job.create({
+    //   data: {
+    //     title,
+    //     description,
+    //     interest,
+    //     source,
+    //     user: { connect: { username } },
+    //     company: {
+    //       connectOrCreate: {
+    //         where: { companyIdentifier: { user_id: userId, name: company } },
+    //         create: { name: company, user: { connect: { id: userId } } },
+    //       },
+    //     },
+    //   },
+    // });
 
     return res.status(201).json({ job });
   } catch (error) {
