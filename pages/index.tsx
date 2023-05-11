@@ -21,6 +21,7 @@ async function getJobs(sessionId: string) {
         cookie: `auth_session=${sessionId}`,
       },
     });
+
     const data = await res.json();
     return data;
   } catch (error) {
@@ -39,17 +40,16 @@ export const getServerSideProps = async (
   const authRequest = auth.handleRequest(context.req, context.res);
   const { user, session } = await authRequest.validateUser();
 
-  if (!user || !session)
+  if (!user || !session) {
     return {
       redirect: {
         destination: "/sign-in",
         permanent: false,
       },
     };
+  }
 
-  const data = await getJobs(session.sessionId);
-  const jobs = data.jobs
-
+  const { jobs } = await getJobs(session.sessionId);
 
   return {
     props: {
@@ -72,9 +72,7 @@ const Index = (
 
       <h2 className="mb-6 text-3xl font-bold">Home</h2>
 
-      {jobs && jobs.map((job, i) => (
-        <JobCard key={i} job={job} />
-      ))}
+      {jobs && jobs.map((job, i) => <JobCard key={i} job={job} />)}
     </>
   );
 };
