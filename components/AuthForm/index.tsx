@@ -41,16 +41,11 @@ export default function AuthForm({ intent }: { intent: Intent }) {
 
   return (
     <>
-      <form
-        onSubmit={handleSubmit(onSubmit)}
-        className="flex flex-col gap-6 mb-6 w-full max-w-xs"
-      >
+      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6 mb-6 w-full max-w-xs">
         <div className="w-full max-w-xs form-control">
           <label className="label">
             <span className="label-text">Username</span>
-            {errors.username && (
-              <span className="label-text-alt">{errors.username?.message}</span>
-            )}
+            {errors.username && <span className="label-text-alt">{errors.username?.message}</span>}
           </label>
           <input
             className="w-full max-w-xs input input-bordered"
@@ -61,9 +56,7 @@ export default function AuthForm({ intent }: { intent: Intent }) {
         <div className="w-full max-w-xs form-control">
           <label className="label">
             <span className="label-text">Password</span>
-            {errors.password && (
-              <span className="label-text-alt">{errors.password?.message}</span>
-            )}
+            {errors.password && <span className="label-text-alt">{errors.password?.message}</span>}
           </label>
           <input
             className="w-full max-w-xs input input-bordered input-md"
@@ -71,10 +64,11 @@ export default function AuthForm({ intent }: { intent: Intent }) {
             {...register("password")}
           />
         </div>
-
-        <button type="submit" className="btn">
-          {intent === "sign-in" ? "Sign In" : "Sign Up"}
-        </button>
+        <div className="mt-6 form-control">
+          <button type="submit" className="btn btn-primary">
+            {intent === "sign-in" ? "Sign In" : "Sign Up"}
+          </button>
+        </div>
       </form>
     </>
   );
