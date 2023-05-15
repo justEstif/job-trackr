@@ -11,6 +11,7 @@ export const getJobs = async (username: string) => {
       user: { username: username },
     },
     include: { company: { select: { name: true } } },
+    orderBy: { created_at: "desc" },
   });
   return jobs;
 };
