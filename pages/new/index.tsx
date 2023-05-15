@@ -1,6 +1,6 @@
 import Head from "next/head";
 import { z, ZodTypeAny } from "zod";
-import { SubmitHandler, useForm } from "react-hook-form";
+import { SubmitHandler, useForm, Controller } from "react-hook-form";
 import { auth } from "@/lib-server/lucia";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type {
@@ -8,8 +8,10 @@ import type {
   GetServerSidePropsResult,
   InferGetServerSidePropsType,
 } from "next";
-import type { User, Session } from "lucia-auth";
-import { ChangeEvent, useEffect, useState } from "react";
+import type { User } from "lucia-auth";
+import Creatable from "react-select/creatable";
+
+import type { Company } from "@prisma/client";
 
 export const numericString = (schema: ZodTypeAny) =>
   z.preprocess((a) => {
@@ -23,22 +25,42 @@ export const numericString = (schema: ZodTypeAny) =>
   }, schema);
 
 const validationSchema = z.object({
-  title: z.string({ required_error: "Title is required" }),
-  description: z.string({ required_error: "description is required" }),
-  interest: numericString(z.number({ required_error: "interest is required" }).min(0).max(5)),
-  source: z.string({ required_error: "source is required" }),
-  company: z.string({ required_error: "company is required" }),
-  userId: z.string({ required_error: "user_id is required" }),
+  title: z.string({ required_error: "Title is required" }).nonempty(),
+  description: z
+    .string({ required_error: "description is required" })
+    .nonempty(),
+  interest: numericString(
+    z.number({ required_error: "interest is required" }).min(0).max(5)
+  ),
+  source: z.string({ required_error: "source is required" }).nonempty(),
+  company: z.string({ required_error: "company is required" }).nonempty(),
+  userId: z.string({ required_error: "user_id is required" }).nonempty(),
 });
 
 type ValidationSchema = z.infer<typeof validationSchema>;
 
+async function getCompanies(sessionId: string) {
+  const url = `${process.env.NEXT_PUBLIC_BASE_API}/company`;
+  try {
+    const res = await fetch(url, {
+      headers: {
+        cookie: `auth_session=${sessionId}`,
+      },
+    });
+
+    const data = await res.json();
+    return data;
+  } catch (error) {
+    console.log(error);
+  }
+}
 export const getServerSideProps = async (
   context: GetServerSidePropsContext
 ): Promise<
   GetServerSidePropsResult<{
     user: User;
     sessionId: string;
+    companiesOptions: { label: string; value: string }[];
   }>
 > => {
   const authRequest = auth.handleRequest(context.req, context.res);
@@ -53,31 +75,35 @@ export const getServerSideProps = async (
     };
   }
 
+  const { companies }: { companies: Company[] } = await getCompanies(
+    session.sessionId
+  );
+
+  const companiesOptions = companies.map((company) => {
+    return {
+      label: company.name,
+      value: company.name,
+    };
+  });
+
   return {
     props: {
       user,
       sessionId: session.sessionId,
+      companiesOptions,
     },
   };
 };
 
-export default function Page(props: InferGetServerSidePropsType<typeof getServerSideProps>) {
-  const [companies, setCompanies] = useState([]);
-
-  useEffect(() => {
-    const fetchCompanies = async () => {
-      const res = await fetch("/api/company");
-      const data = await res.json();
-      setCompanies(data.companies);
-    };
-    fetchCompanies();
-  }, []);
-
-  const { user, sessionId } = props;
+export default function Page(
+  props: InferGetServerSidePropsType<typeof getServerSideProps>
+) {
+  const { user, sessionId, companiesOptions } = props;
   const {
     register,
     handleSubmit,
-    setError,
+    control,
+    reset,
     formState: { errors },
   } = useForm<ValidationSchema>({ resolver: zodResolver(validationSchema) });
 
@@ -91,22 +117,11 @@ export default function Page(props: InferGetServerSidePropsType<typeof getServer
         },
         body: JSON.stringify(data),
       });
-      const body = await response.json();
-      console.log(body);
-      const result = (await response.json()) as {
-        error: string;
-      };
-      setError("title", { message: result.error });
+      await response.json();
+      reset();
     } catch (error) {
       // TODO add error messages
     }
-  };
-
-  const onCompanyChange = async (data: ChangeEvent<HTMLInputElement>) => {
-    const value = data.target.value;
-    if (value.length < 2) return;
-
-    console.log(data.target.value);
   };
 
   return (
@@ -124,10 +139,12 @@ export default function Page(props: InferGetServerSidePropsType<typeof getServer
           <div className="w-full max-w-sm form-control">
             <label className="label">
               <span className="label-text">Title</span>
-              {errors.title && <span className="label-text-alt">{errors.title?.message}</span>}
+              {errors.title && (
+                <span className="label-text-alt">{errors.title?.message}</span>
+              )}
             </label>
             <input
-              {...register("title")}
+              {...register("title", { required: "Required" })}
               className="w-full max-w-sm input input-bordered"
               placeholder="Job title"
             />
@@ -136,7 +153,9 @@ export default function Page(props: InferGetServerSidePropsType<typeof getServer
           <div className="w-full max-w-sm form-control">
             <label className="label">
               <span className="label-text">Source</span>
-              {errors.source && <span className="label-text-alt">{errors.source?.message}</span>}
+              {errors.source && (
+                <span className="label-text-alt">{errors.source?.message}</span>
+              )}
             </label>
             <input
               {...register("source")}
@@ -145,27 +164,42 @@ export default function Page(props: InferGetServerSidePropsType<typeof getServer
             />
           </div>
 
-          <input {...register("userId")} className="hidden" value={user.userId} />
+          <input
+            {...register("userId")}
+            className="hidden"
+            value={user.userId}
+          />
 
           <div className="w-full max-w-sm form-control">
             <label className="label">
               <span className="label-text">Company</span>
-              {errors.company && <span className="label-text-alt">{errors.company?.message}</span>}
+              {errors.company && (
+                <span className="label-text-alt">
+                  {errors.company?.message}
+                </span>
+              )}
             </label>
-            <input
-              {...register("company")}
-              onChange={onCompanyChange}
-              className="w-full max-w-sm input input-bordered"
-              placeholder="Job company"
-              list="companies"
+            <Controller
+              control={control}
+              name="company"
+              render={({ field: { onChange, value, ref } }) => (
+                <Creatable
+                  options={companiesOptions}
+                  value={companiesOptions.find((c) => c.value === value)}
+                  onChange={(val) => onChange(val && val.value && val.value)}
+                  isClearable
+                />
+              )}
             />
           </div>
 
           <div className="gap-2 w-full max-w-md form-control">
-            <label className="Job Description">
+            <label className="label">
               <span className="label-text">Description</span>
               {errors.description && (
-                <span className="label-text-alt">{errors.source?.message}</span>
+                <span className="label-text-alt">
+                  {errors.description?.message}
+                </span>
               )}
             </label>
 
@@ -178,68 +212,29 @@ export default function Page(props: InferGetServerSidePropsType<typeof getServer
           <div className="w-full max-w-md form-control">
             <label className="label">
               <span className="label-text">Interest</span>
-              {errors.description && (
-                <span className="label-text-alt">{errors.source?.message}</span>
-              )}
             </label>
-
-            <div className="rating">
-              <input
-                type="radio"
-                {...register("interest")}
-                value={1}
-                name="rating-2"
-                className="bg-orange-400 mask mask-star-2"
-              />
-              <input
-                type="radio"
-                {...register("interest")}
-                value={2}
-                name="rating-2"
-                className="bg-orange-400 mask mask-star-2"
-                checked
-              />
-              <input
-                type="radio"
-                {...register("interest")}
-                value={3}
-                name="rating-2"
-                className="bg-orange-400 mask mask-star-2"
-              />
-              <input
-                type="radio"
-                {...register("interest")}
-                value={4}
-                name="rating-2"
-                className="bg-orange-400 mask mask-star-2"
-              />
-              <input
-                type="radio"
-                {...register("interest")}
-                value={5}
-                name="rating-2"
-                className="bg-orange-400 mask mask-star-2"
-              />
+            <input
+              {...register("interest")}
+              type="range"
+              min="1"
+              max="5"
+              step="1"
+              className="range"
+            />
+            <div className="flex justify-between px-2 w-full text-xs">
+              <span>|</span>
+              <span>|</span>
+              <span>|</span>
+              <span>|</span>
+              <span>|</span>
             </div>
           </div>
-
           <div className="mt-6 form-control">
             <button type="submit" className="btn btn-primary">
               Create
             </button>
           </div>
         </form>
-        <input
-          type="text"
-          id="company"
-          {...register("company", { required: true })}
-          list="company-list"
-        />
-        <datalist id="company-list">
-          {companies.map((company, key) => (
-            <option key={key} value={company.name} />
-          ))}
-        </datalist>
       </div>
     </>
   );
