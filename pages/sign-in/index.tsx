@@ -1,7 +1,7 @@
-import { auth } from "../../lib-server/lucia";
 import type { GetServerSidePropsContext, GetServerSidePropsResult } from "next";
-import AuthForm from "../../components/AuthForm";
+import AuthForm from "@/components/AuthForm";
 import Head from "next/head";
+import { getAuth } from "@/lib-client/utils";
 
 export default function SignInPage() {
   return (
@@ -20,9 +20,8 @@ export default function SignInPage() {
 export const getServerSideProps = async (
   context: GetServerSidePropsContext
 ): Promise<GetServerSidePropsResult<{}>> => {
-  const authRequest = auth.handleRequest(context.req, context.res);
-  const session = await authRequest.validate();
-  if (session) {
+  const auth = await getAuth(context);
+  if (auth) {
     return {
       redirect: {
         destination: "/",

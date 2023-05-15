@@ -1,13 +1,12 @@
-import { auth } from "../../lib-server/lucia";
 import type { GetServerSidePropsContext, GetServerSidePropsResult } from "next";
-import AuthForm from "../../components/AuthForm";
 import Head from "next/head";
+import { getAuth } from "@/lib-client/utils";
+import AuthForm from "@/components/AuthForm";
 
 const Index = () => {
   return (
     <>
       <Head>Sign Up</Head>
-
       <div className="flex flex-col justify-center items-center">
         <h2 className="mb-6 text-3xl font-bold">Sign Up</h2>
         <AuthForm intent={"sign-up"} />
@@ -21,9 +20,9 @@ export default Index;
 export const getServerSideProps = async (
   context: GetServerSidePropsContext
 ): Promise<GetServerSidePropsResult<{}>> => {
-  const authRequest = auth.handleRequest(context.req, context.res);
-  const session = await authRequest.validate();
-  if (session) {
+  const auth = await getAuth(context);
+
+  if (auth) {
     return {
       redirect: {
         destination: "/",
@@ -31,6 +30,7 @@ export const getServerSideProps = async (
       },
     };
   }
+
   return {
     props: {},
   };
