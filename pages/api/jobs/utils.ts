@@ -9,6 +9,9 @@ export const getJobs = async (username: string) => {
   const jobs = await prisma.job.findMany({
     where: {
       user: { username: username },
+      NOT: {
+        status: { equals: "ARCHIVED" },
+      },
     },
     include: { company: { select: { name: true } } },
     orderBy: { created_at: "desc" },

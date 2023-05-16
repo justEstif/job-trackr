@@ -2,7 +2,7 @@ import { z, ZodTypeAny } from "zod";
 import { SubmitHandler, useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { User } from "lucia-auth";
-import Creatable from "react-select/dist/declarations/src/Creatable";
+import Creatable from "react-select/creatable";
 import type { Options } from "react-select";
 
 const numericString = (schema: ZodTypeAny) =>
@@ -20,7 +20,8 @@ const validationSchema = z.object({
   title: z.string({ required_error: "Title is required" }).nonempty(),
   description: z
     .string({ required_error: "description is required" })
-    .nonempty(),
+    .nonempty()
+    .transform((str) => str.replace(/(?:\r\n|\r|\n)/g, "<br />")),
   interest: numericString(
     z.number({ required_error: "interest is required" }).min(0).max(5)
   ),
@@ -61,7 +62,7 @@ const JobForm = ({
       await response.json();
       reset();
     } catch (error) {
-      // TODO add error messages
+      console.log(error);
     }
   };
 

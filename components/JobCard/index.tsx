@@ -1,5 +1,6 @@
 import type { Job } from "@prisma/client";
 import { formatDate } from "./utils";
+
 type JobWithCompanyName = Job & { company: { name: string } };
 
 export const JobCard = ({ job }: { job: JobWithCompanyName }) => {
@@ -10,21 +11,24 @@ export const JobCard = ({ job }: { job: JobWithCompanyName }) => {
           {job.title} • {job.company.name}
         </h2>
 
-        <p>{job.status}</p>
-        <p>{formatDate(job.created_at.toString())}</p>
+        <p>
+          {job.status} • {formatDate(job.created_at.toString())}
+        </p>
+        <p>
+          <a href={job.source} className="link">
+            Source
+          </a>
+        </p>
 
-        <div className="collapse">
+        <div className="collapse collapse-arrow">
           <input type="checkbox" />
           <div className="font-medium collapse-title">Job Description</div>
           <div className="collapse-content">
-            <p>{job.description}</p>
+            <p dangerouslySetInnerHTML={{ __html: job.description }}></p>
           </div>
         </div>
 
         <div className="justify-end card-actions">
-          <button className="btn tn-secondary">
-            <a href={job.source}> Source</a>
-          </button>
           <button className="btn btn-primary">Update</button>
         </div>
       </div>

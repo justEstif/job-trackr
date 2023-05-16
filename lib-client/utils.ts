@@ -1,5 +1,5 @@
 import { auth } from "@/lib-server/lucia";
-import type { Session, User } from "lucia-auth";
+import type { Session } from "lucia-auth";
 import type { GetServerSidePropsContext } from "next";
 
 /**

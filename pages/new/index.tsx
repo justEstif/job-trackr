@@ -3,8 +3,9 @@ import type {
   GetServerSidePropsContext,
   InferGetServerSidePropsType,
 } from "next";
-import { getAuth } from "@/lib-client/utils";
+import { getApiData, getAuth } from "@/lib-client/utils";
 import JobForm from "@/components/JobForm";
+import type { Company } from "@prisma/client";
 
 export const getServerSideProps = async (
   context: GetServerSidePropsContext
@@ -19,6 +20,24 @@ export const getServerSideProps = async (
       },
     };
   }
+
+  const { companies }: { companies: Company[] } = await getApiData(
+    "company",
+    auth.session.sessionId
+  );
+
+  const companiesOptions = companies.map((company) => ({
+    label: company.name,
+    value: company.name,
+  }));
+
+  return {
+    props: {
+      user: auth.user,
+      sessionId: auth.session.sessionId,
+      companiesOptions,
+    },
+  };
 };
 
 export default function Page(
