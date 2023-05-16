@@ -1,4 +1,5 @@
 import type { Job } from "@prisma/client";
+import Link from "next/link";
 import { formatDate } from "./utils";
 
 type JobWithCompanyName = Job & { company: { name: string } };
@@ -15,9 +16,9 @@ export const JobCard = ({ job }: { job: JobWithCompanyName }) => {
           {job.status} • {formatDate(job.created_at.toString())}
         </p>
         <p>
-          <a href={job.source} className="link">
+          <Link href={job.source} className="link">
             Source
-          </a>
+          </Link>
         </p>
 
         <div className="collapse collapse-arrow">
@@ -29,7 +30,9 @@ export const JobCard = ({ job }: { job: JobWithCompanyName }) => {
         </div>
 
         <div className="justify-end card-actions">
-          <button className="btn btn-primary">Update</button>
+          <Link href={`/update/${job.id}`} className="btn btn-primary">
+            Update
+          </Link>
         </div>
       </div>
     </div>

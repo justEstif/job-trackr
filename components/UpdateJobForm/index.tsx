@@ -4,43 +4,19 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import type { User } from "lucia-auth";
 import Creatable from "react-select/creatable";
 import type { Options } from "react-select";
+import type { Job } from "@prisma/client";
 
-const numericString = (schema: ZodTypeAny) =>
-  z.preprocess((a) => {
-    if (typeof a === "string") {
-      return parseInt(a, 10);
-    } else if (typeof a === "number") {
-      return a;
-    } else {
-      return undefined;
-    }
-  }, schema);
-
-const validationSchema = z.object({
-  title: z.string({ required_error: "Title is required" }).nonempty(),
-  description: z
-    .string({ required_error: "description is required" })
-    .nonempty()
-    .transform((str) => str.replace(/(?:\r\n|\r|\n)/g, "<br />")),
-  interest: numericString(
-    z.number({ required_error: "interest is required" }).min(0).max(5)
-  ),
-  source: z.string({ required_error: "source is required" }).nonempty(),
-  company: z.string({ required_error: "company is required" }).nonempty(),
-  userId: z.string({ required_error: "userId is required" }).nonempty(),
-});
-
-type ValidationSchema = z.infer<typeof validationSchema>;
-
-const JobForm = ({
+export default function UpdateJobForm({
   sessionId,
   companiesOptions,
   user,
+  job,
 }: {
   sessionId: string;
   companiesOptions: Options<{ value: string }>;
   user: User;
-}) => {
+  job: Job & { company: { name: string } };
+}) {
   const {
     register,
     handleSubmit,
@@ -49,13 +25,20 @@ const JobForm = ({
     formState: { errors },
   } = useForm<ValidationSchema>({
     resolver: zodResolver(validationSchema),
-    defaultValues: { userId: user.userId },
+    defaultValues: {
+      description: job.description.replace(/<br \/>/g, "\n"),
+      interest: job.interest,
+      title: job.title,
+      source: job.source,
+      userId: user.userId,
+      company: job.company.name,
+    },
   });
 
   const onSubmit: SubmitHandler<ValidationSchema> = async (data) => {
     try {
-      const response = await fetch("/api/jobs", {
-        method: "POST",
+      const response = await fetch(`/api/jobs/${job.id}`, {
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
           cookie: `auth_session=${sessionId}`,
@@ -122,6 +105,7 @@ const JobForm = ({
           )}
         />
       </div>
+
       <div className="gap-2 w-full max-w-md form-control">
         <label className="label">
           <span className="label-text">Description</span>
@@ -160,11 +144,36 @@ const JobForm = ({
       </div>
       <div className="mt-6 form-control">
         <button type="submit" className="btn btn-primary">
-          Create
+          Update
         </button>
       </div>
     </form>
   );
-};
+}
 
-export default JobForm;
+const numericString = (schema: ZodTypeAny) =>
+  z.preprocess((a) => {
+    if (typeof a === "string") {
+      return parseInt(a, 10);
+    } else if (typeof a === "number") {
+      return a;
+    } else {
+      return undefined;
+    }
+  }, schema);
+
+const validationSchema = z.object({
+  title: z.string({ required_error: "Title is required" }).nonempty(),
+  description: z
+    .string({ required_error: "description is required" })
+    .nonempty()
+    .transform((str) => str.replace(/(?:\r\n|\r|\n)/g, "<br />")),
+  interest: numericString(
+    z.number({ required_error: "interest is required" }).min(0).max(5)
+  ),
+  source: z.string({ required_error: "source is required" }).nonempty(),
+  company: z.string({ required_error: "company is required" }).nonempty(),
+  userId: z.string({ required_error: "user_id is required" }).nonempty(),
+});
+
+type ValidationSchema = z.infer<typeof validationSchema>;

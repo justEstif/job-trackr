@@ -1,25 +1,31 @@
 import Head from "next/head";
+import type { Options } from "react-select";
+import type { User } from "lucia-auth";
+import JobForm from "@/components/JobForm";
+import { useRouter } from "next/router";
 import type {
   GetServerSidePropsContext,
   InferGetServerSidePropsType,
 } from "next";
 import { getApiData, getAuth } from "@/lib-client/utils";
-import JobForm from "@/components/JobForm";
-import type { Company } from "@prisma/client";
+import type { Company, Job } from "@prisma/client";
+import UpdateJobForm from "@/components/UpdateJobForm";
 
 export default function Page(
   props: InferGetServerSidePropsType<typeof getServerSideProps>
 ) {
-  const { user, sessionId, companiesOptions } = props;
+  const { companiesOptions, job, sessionId, user } = props;
+  const router = useRouter();
   return (
     <>
       <Head>
-        <title>New</title>
+        <title>Update</title>
       </Head>
 
       <div className="flex flex-col justify-center items-center">
-        <h2 className="mb-6 text-3xl font-bold">New</h2>
-        <JobForm
+        <h2 className="mb-6 text-3xl font-bold">Update</h2>
+        <UpdateJobForm
+          job={job}
           user={user}
           sessionId={sessionId}
           companiesOptions={companiesOptions}
@@ -43,6 +49,18 @@ export const getServerSideProps = async (
     };
   }
 
+  if (!context.params || !context.params.slug) {
+    return {
+      redirect: {
+        destination: "/",
+        permanent: false,
+      },
+    };
+  }
+
+  const { job }: { job: Job & { company: { name: string } } } =
+    await getApiData(`jobs/${context.params.slug}`, auth.session.sessionId);
+
   const { companies }: { companies: Company[] } = await getApiData(
     "company",
     auth.session.sessionId
@@ -58,6 +76,7 @@ export const getServerSideProps = async (
       user: auth.user,
       sessionId: auth.session.sessionId,
       companiesOptions,
+      job,
     },
   };
 };
