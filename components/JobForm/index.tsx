@@ -46,7 +46,7 @@ const JobForm = ({
     handleSubmit,
     control,
     reset,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm<ValidationSchema>({
     resolver: zodResolver(validationSchema),
     defaultValues: { userId: user.userId },
@@ -63,7 +63,12 @@ const JobForm = ({
         body: JSON.stringify(data),
       });
       await response.json();
-      reset();
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          resolve(null);
+        }, 1000);
+        reset();
+      });
     } catch (error) {
       console.log(error);
     }
@@ -159,9 +164,13 @@ const JobForm = ({
         </div>
       </div>
       <div className="mt-6 form-control">
-        <button type="submit" className="btn btn-primary">
-          Create
-        </button>
+        {isSubmitting ? (
+          <button className="btn loading disabled">Creating</button>
+        ) : (
+          <button type="submit" className="btn btn-primary">
+            Create
+          </button>
+        )}
       </div>
     </form>
   );

@@ -22,7 +22,7 @@ export default function UpdateJobForm({
     handleSubmit,
     control,
     reset,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm<ValidationSchema>({
     resolver: zodResolver(validationSchema),
     defaultValues: {
@@ -46,7 +46,11 @@ export default function UpdateJobForm({
         body: JSON.stringify(data),
       });
       await response.json();
-      reset();
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          resolve(null);
+        }, 1000);
+      });
     } catch (error) {
       console.log(error);
     }
@@ -142,10 +146,14 @@ export default function UpdateJobForm({
           <span>|</span>
         </div>
       </div>
-      <div className="mt-6 form-control">
-        <button type="submit" className="btn btn-primary">
-          Update
-        </button>
+      <div className="mt-6 duration-1000 form-control">
+        {isSubmitting ? (
+          <button className="btn loading disabled">Updating</button>
+        ) : (
+          <button type="submit" className="btn btn-primary">
+            Update
+          </button>
+        )}
       </div>
     </form>
   );

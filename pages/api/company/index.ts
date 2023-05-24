@@ -3,7 +3,7 @@ import { z } from "zod";
 import { prisma } from "@/lib-server/prisma";
 import withUser from "@/lib-server/middleware/withUser";
 import { Prisma } from "@prisma/client";
-import { getUsername, isImgUrl } from "@/lib-server/util";
+import { getUsername } from "@/lib-server/utils";
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
   switch (req.method) {
@@ -18,17 +18,12 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
 
 export default withUser(handler);
 
-const getSearch = (req: NextApiRequest) => {
-  const { search } = z
-    .object({ search: z.string().optional() })
-    .parse(req.query);
-  return search;
-};
-
 const GET: NextApiHandler = async (req, res) => {
   try {
     const username = getUsername(req);
-    const search = getSearch(req);
+    const search = z
+      .object({ search: z.string().optional() })
+      .parse(req.query).search;
 
     const companies = await prisma.company.findMany({
       where: {
@@ -60,19 +55,14 @@ const GET: NextApiHandler = async (req, res) => {
 const POST: NextApiHandler = async (req, res) => {
   try {
     const username = getUsername(req);
-    const { name, image_url } = z
+    const { name } = z
       .object({
         name: z.string({ required_error: "Username is required" }),
-        image_url: z
-          .string()
-          .optional()
-          .refine((data) => isImgUrl(data)),
       })
       .parse(req.body);
     const company = await prisma.company.create({
       data: {
         name,
-        image_url: image_url || null,
         user: { connect: { username } },
       },
     });

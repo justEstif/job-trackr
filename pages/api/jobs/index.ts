@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { z } from "zod";
 import { prisma } from "@/lib-server/prisma";
-import { getUsername } from "@/lib-server/util";
+import { getUsername } from "@/lib-server/utils";
 import withUser from "@/lib-server/middleware/withUser";
 import { Prisma } from "@prisma/client";
 import { getJobs } from "./utils";
