@@ -7,53 +7,58 @@ import type {
   InferGetServerSidePropsType,
 } from "next";
 import type { User } from "lucia-auth";
+import Head from "next/head";
+import type { Job } from "@prisma/client";
+import { JobCard } from "@/components/JobCard";
+import { getAuth, getApiData } from "@/lib-client/utils";
 
-export const getServerSideProps = async (
-  context: GetServerSidePropsContext
-): Promise<GetServerSidePropsResult<{ user: User }>> => {
-  const authRequest = auth.handleRequest(context.req, context.res);
-  const { user } = await authRequest.validateUser();
-  if (!user)
-    return {
-      redirect: {
-        destination: "/login",
-        permanent: false,
-      },
-    };
-  return {
-    props: {
-      user,
-    },
-  };
-};
+type JobWithCompanyName = Job & { company: { name: string } };
 
 const Index = (
   props: InferGetServerSidePropsType<typeof getServerSideProps>
 ) => {
-  const router = useRouter();
+  const { jobs } = props;
+
   return (
     <>
-      <p>
-        This page is protected and can only be accessed by authenticated users.
-      </p>
-      <pre className="code">{JSON.stringify(props.user, null, 2)}</pre>
+      <Head>
+        <title>Home</title>
+      </Head>
 
-      <button
-        onClick={async () => {
-          try {
-            await fetch("/api/logout", {
-              method: "POST",
-            });
-            router.push("/login");
-          } catch (e) {
-            console.log(e);
-          }
-        }}
-      >
-        Sign out
-      </button>
+      <h2 className="mb-6 text-3xl font-bold">Home</h2>
+
+      {jobs && jobs.map((job, i) => <JobCard key={i} job={job} />)}
     </>
   );
 };
 
 export default Index;
+
+export const getServerSideProps = async (
+  context: GetServerSidePropsContext
+): Promise<
+  GetServerSidePropsResult<{
+    user: User;
+    jobs: JobWithCompanyName[];
+  }>
+> => {
+  const auth = await getAuth(context);
+
+  if (!auth) {
+    return {
+      redirect: {
+        destination: "/sign-in",
+        permanent: false,
+      },
+    };
+  }
+
+  const { jobs } = await getApiData("jobs", auth.session.sessionId);
+
+  return {
+    props: {
+      user: auth.user,
+      jobs: jobs || [],
+    },
+  };
+};

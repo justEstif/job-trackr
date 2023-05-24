@@ -1,4 +1,4 @@
-import { auth } from "../../lib-server/lucia";
+import { auth } from "../../../lib-server/lucia";
 import { z } from "zod";
 import { LuciaError } from "lucia-auth";
 import { Prisma } from "@prisma/client";

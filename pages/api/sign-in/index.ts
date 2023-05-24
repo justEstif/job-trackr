@@ -1,4 +1,4 @@
-import { auth } from "../../lib-server/lucia";
+import { auth } from "../../../lib-server/lucia";
 import type { NextApiHandler, NextApiRequest, NextApiResponse } from "next";
 import { LuciaError } from "lucia-auth";
 import { z } from "zod";
@@ -24,37 +24,35 @@ const POST: NextApiHandler = async (req, res) => {
   try {
     const { username, password } = z
       .object({
-        username: z.string(),
-        password: z.string(),
+        username: z.string({ required_error: "Username is required" }),
+        password: z.string({ required_error: "Password is required" }),
       })
       .parse(body);
-
     const authRequest = auth.handleRequest(req, res);
     const key = await auth.useKey("username", username, password);
     const session = await auth.createSession(key.userId);
     authRequest.setSession(session);
     return res.redirect(302, "/");
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return res.status(400).json({
-        error: error.issues,
-        dump: error,
-      });
-    }
-
     if (error instanceof LuciaError) {
       if (
         error.message === "AUTH_INVALID_KEY_ID" ||
         error.message === "AUTH_INVALID_PASSWORD"
       ) {
-        return res.status(200).json({
+        return res.status(400).json({
           error: "Incorrect username or password",
         });
       }
     }
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({
+        error: error.issues.map((issue) => issue.message).toString(),
+      });
+    }
+
     // database connection error
     console.error(error);
-    return res.status(200).json({
+    return res.status(500).json({
       error: "Unknown error occurred",
     });
   }

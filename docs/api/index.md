@@ -2,13 +2,12 @@
 
 ## Endpoints
 
-- [ ] sign-in: handled by package
-- [ ] sign-up: handled by package
-- [ ] sign-out
-- job-applications
+- [x] sign-in: handled by package
+- [x] sign-up: handled by package
+- [x] sign-out
+- [ ] job-applications
 - search
 - notifications
-- job-sources
 - job-company
 
 ## `/job-applications`

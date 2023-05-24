@@ -16,7 +16,7 @@ enum Status {
 }
 
 model Job {
-  id String @id @unique
+  id String @id @default(cuid())
 
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
@@ -43,25 +43,25 @@ model Job {
 }
 
 model Company {
-  id        String   @id @unique
-  name      String   @unique
-  image_url String
+  id String @id @default(cuid())
+
+  name      String
+  image_url String?
   user      AuthUser @relation(references: [id], fields: [user_id], onDelete: Cascade)
   user_id   String
   jobs      Job[]
 
+  @@unique([user_id, name], name: "companyIdentifier")
   @@map("company")
 }
 
 model Notification {
-  id          String   @id @unique
+  id          String   @id @default(cuid())
   name        String
   notify_date DateTime @default(dbgenerated("NOW() + interval '14 day'"))
 
-  user_id String
-  job_id  String
-  user    AuthUser @relation(references: [id], fields: [user_id], onDelete: Cascade)
-  job     Job      @relation(references: [id], fields: [job_id], onDelete: Cascade)
+  job_id String
+  job    Job    @relation(references: [id], fields: [job_id], onDelete: Cascade)
 
   @@map("notification")
 }
@@ -71,10 +71,9 @@ model AuthUser {
   auth_session AuthSession[]
   auth_key     AuthKey[]
 
-  username      String         @unique
-  jobs          Job[]
-  companies     Company[]
-  notifications Notification[]
+  username  String    @unique
+  jobs      Job[]
+  companies Company[]
 
   @@map("auth_user")
 }
