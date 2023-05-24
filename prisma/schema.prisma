@@ -3,52 +3,36 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-}
-
-enum Status {
-  APPLIED
-  INTERVIEWING
-  DENIED
-  DECLINED
-  ARCHIVED
+  provider          = "postgresql"
+  url               = env("POSTGRES_PRISMA_URL")
+  directUrl         = env("POSTGRES_URL_NON_POOLING")
+  shadowDatabaseUrl = env("POSTGRES_URL_NON_POOLING")
 }
 
 model Job {
-  id String @id @default(cuid())
-
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
-
-  // details
-  title       String
-  interest    Int
-  status      Status @default(APPLIED)
-  description String
-  source      String
-
-  // applicant
-  user    AuthUser @relation(references: [id], fields: [user_id], onDelete: Cascade)
-  user_id String
-
-  // company
-  company    Company @relation(references: [id], fields: [company_id], onDelete: Cascade)
-  company_id String
-
-  // notifications
+  id            String         @id @default(cuid())
+  created_at    DateTime       @default(now())
+  updated_at    DateTime       @updatedAt
+  title         String
+  interest      Int
+  status        Status         @default(APPLIED)
+  description   String
+  source        String
+  user_id       String
+  company_id    String
+  company       Company        @relation(fields: [company_id], references: [id], onDelete: Cascade)
+  user          AuthUser       @relation(fields: [user_id], references: [id], onDelete: Cascade)
   notifications Notification[]
 
   @@map("job")
 }
 
 model Company {
-  id String @id @default(cuid())
-
+  id        String   @id @default(cuid())
   name      String
   image_url String?
-  user      AuthUser @relation(references: [id], fields: [user_id], onDelete: Cascade)
   user_id   String
+  user      AuthUser @relation(fields: [user_id], references: [id], onDelete: Cascade)
   jobs      Job[]
 
   @@unique([user_id, name], name: "companyIdentifier")
@@ -58,22 +42,20 @@ model Company {
 model Notification {
   id          String   @id @default(cuid())
   name        String
-  notify_date DateTime @default(dbgenerated("NOW() + interval '14 day'"))
-
-  job_id String
-  job    Job    @relation(references: [id], fields: [job_id], onDelete: Cascade)
+  notify_date DateTime @default(dbgenerated("(now() + '14 days'::interval)"))
+  job_id      String
+  job         Job      @relation(fields: [job_id], references: [id], onDelete: Cascade)
 
   @@map("notification")
 }
 
 model AuthUser {
   id           String        @id @unique
-  auth_session AuthSession[]
+  username     String        @unique
   auth_key     AuthKey[]
-
-  username  String    @unique
-  jobs      Job[]
-  companies Company[]
+  auth_session AuthSession[]
+  companies    Company[]
+  jobs         Job[]
 
   @@map("auth_user")
 }
@@ -83,7 +65,7 @@ model AuthSession {
   user_id        String
   active_expires BigInt
   idle_expires   BigInt
-  auth_user      AuthUser @relation(references: [id], fields: [user_id], onDelete: Cascade)
+  auth_user      AuthUser @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   @@index([user_id])
   @@map("auth_session")
@@ -95,8 +77,16 @@ model AuthKey {
   user_id         String
   primary_key     Boolean
   expires         BigInt?
-  auth_user       AuthUser @relation(references: [id], fields: [user_id], onDelete: Cascade)
+  auth_user       AuthUser @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   @@index([user_id])
   @@map("auth_key")
+}
+
+enum Status {
+  APPLIED
+  INTERVIEWING
+  DENIED
+  DECLINED
+  ARCHIVED
 }
